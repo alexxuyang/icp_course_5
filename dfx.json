@@ -4,6 +4,18 @@
       "main": "src/icp_course_5/main.mo",
       "type": "motoko"
     },
+    "icp_course_5_2": {
+      "main": "src/icp_course_5/main.mo",
+      "type": "motoko"
+    },
+    "icp_course_5_3": {
+      "main": "src/icp_course_5/main.mo",
+      "type": "motoko"
+    },
+    "icp_course_5_4": {
+      "main": "src/icp_course_5/main.mo",
+      "type": "motoko"
+    },
     "icp_course_5_assets": {
       "dependencies": [
         "icp_course_5"
