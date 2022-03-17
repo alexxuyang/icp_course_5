@@ -2,17 +2,17 @@ import { icp_course_5 } from "../../declarations/icp_course_5";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { idlFactory } from '../../declarations/icp_course_5/icp_course_5.did.js';
 
-BigInt.prototype.toJSON = function() {
-  let s = this.toString().substr(0,13)*1;
-  return new Date(s).toLocaleString();
-}
-
 function createActor(canisterId) {
   const agent = new HttpAgent();
   return Actor.createActor(idlFactory, {
     agent,
     canisterId
   });
+}
+
+function toLocaleDate(s) {
+  let ss = s.toString().substr(0,13)*1;
+  return new Date(ss).toLocaleString();
 }
 
 async function post() {
@@ -38,6 +38,25 @@ async function post() {
   post_button.disabled = false;
 }
 
+function get_html_from_post(p) {
+  let post = document.createElement("p");
+      
+  let text = document.createElement("div");
+  text.innerText = p.text;
+
+  let time = document.createElement("div");
+  time.innerText = toLocaleDate(p.time);
+
+  let author = document.createElement("div");
+  author.innerText = p.author;
+
+  post.insertBefore(author, null);
+  post.insertBefore(text, null);
+  post.insertBefore(time, null);
+
+  return post;
+}
+
 var num_posts = 0;
 async function load_posts() {
   let posts = await icp_course_5.posts(0);
@@ -49,9 +68,7 @@ async function load_posts() {
 
   console.log(posts);
   for(var i = 0; i < posts.length; i++) {
-    let post = document.createElement("p");
-    post.innerText = JSON.stringify(posts[i]);
-    post_sec.appendChild(post);
+    post_sec.appendChild(get_html_from_post(posts[i]));
   }
 }
 
@@ -65,17 +82,23 @@ async function load_follows() {
   follows_sec.replaceChildren([]);
 
   console.log(follows);
+  console.log(follows.length);
   for(var i = 0; i < follows.length; i++) {
-    let act = createActor((follows[i]).toString());
+    console.log(i);
+    let principalID = (follows[i]).toString();
+    let act = createActor(principalID);
     let name = await act.get_name();
 
     let a = document.createElement("a");
-    a.setAttribute("href","#");
-    a.appendChild(document.createTextNode(name + " [" + (follows[i]).toString() + "]"));
+    a.setAttribute("href", 'javascript:void(0)');
+    a.appendChild(document.createTextNode(name + " [" + principalID + "]"));
+    follows_sec.appendChild(a);
 
-    let follow = document.createElement("p");
-    follow.insertBefore(a, null);
-    follows_sec.appendChild(follow);
+    let posts = await act.posts(0);
+
+    for(var j = 0; j < posts.length; j++) {
+      follows_sec.appendChild(get_html_from_post(posts[j]));
+    }
   }
 }
 
@@ -90,9 +113,7 @@ async function load_timeline() {
 
   console.log(timeline);
   for(var i = 0; i < timeline.length; i++) {
-    let tl = document.createElement("p");
-    tl.innerText = JSON.stringify(timeline[i]);
-    timeline_sec.appendChild(tl);
+    timeline_sec.appendChild(get_html_from_post(timeline[i]));
   }
 }
 
@@ -107,7 +128,7 @@ function load() {
   setInterval(load_follows, 3000);
 
   load_timeline();
-  setInterval(load_timeline, 3000)
+  setInterval(load_timeline, 3000);
 }
 
 window.onload = load;
